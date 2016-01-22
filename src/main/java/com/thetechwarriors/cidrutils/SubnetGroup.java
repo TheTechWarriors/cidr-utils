@@ -19,16 +19,31 @@ package com.thetechwarriors.cidrutils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EnvironmentBluePrint {
-
-	private List<RangeGroup> groups = new ArrayList<RangeGroup>();
+public class SubnetGroup {
 	
-	public EnvironmentBluePrint withRangeGroup(String name, int maskSize, int numSubnets) {
-		groups.add(new RangeGroup(name, maskSize, numSubnets));
-		return this;
+	private String name;
+	private int mask;
+	private int count;
+	
+	public SubnetGroup(String name, int mask, int count) {
+		this.name = name;
+		this.mask = mask;
+		this.count = count;
 	}
 
-	public RangeGroup[] getRangeGroups() {
-		return groups.toArray(new RangeGroup[groups.size()]);
+	public List<Subnet> getSubnets(Subnet startingRange) {
+		List<Subnet> ranges = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			ranges.add(startingRange.getNext(i));
+		}
+		return ranges;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public int getMask() {
+		return mask;
 	}
 }

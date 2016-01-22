@@ -18,12 +18,12 @@ package com.thetechwarriors.cidrutils;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Range {
+public class Subnet {
 
 	private int[] octets = new int[4];
 	private int maskSize;
 
-	public Range(String ipAddress, int maskSize) {
+	public Subnet(String ipAddress, int maskSize) {
 		String[] split = StringUtils.split(ipAddress, '.');
 		for (int i = 0; i < 4; i++) {
 			this.octets[i] = Integer.parseInt(split[i]);
@@ -31,6 +31,10 @@ public class Range {
 		this.maskSize = maskSize;
 	}
 
+	/**
+	 * Gets the maximum number of IP address in the current subnet. For example,
+	 * if current subnet is 192.168.1.0/24, then the max is 256.
+	 */
 	public long getMaxIpAddresses() {
 		return (long) Math.pow(2, 32-maskSize);
 	}
@@ -39,38 +43,57 @@ public class Range {
 		return String.format("%03d.%03d.%03d.%03d", octets[0], octets[1], octets[2], octets[3]);
 	}
 
+	/**
+	 * Gets the first IP address in the current subnet. For example, if current
+	 * subnet is 192.168.1.0/24, then the first IP address would be 192.168.1.0
+	 */
 	public String getFirstIPAddress() {
 		long ipAsLong = ipToLong();
 		return longToIp(ipAsLong);
 	}
 
+	/**
+	 * Gets the last IP address in the current subnet. For example, if current
+	 * subnet is 192.168.1.0/24, then the last IP address would be 192.168.1.255
+	 */
 	public String getLastIPAddress() {
 		long ipAsLong = ipToLong() + getMaxIpAddresses() - 1;
 		return longToIp(ipAsLong);
 	}
 
-	public Range getNext() {
+	/**
+	 * Gets the next subnet with this mask in the enclosing subnet. For example,
+	 * if current subnet is 192.168.1.0/24, next subnet would be 192.168.1.0/24.
+	 */
+	public Subnet getNext() {
 		return getNext(1);
 	}
 	
 	/**
-	 * Gets the next range with this mask
+	 * Gets the next subnet with this mask in the enclosing subnet. For example,
+	 * if current subnet is 192.168.1.0/24, next(0) subnet would be
+	 * 192.168.1.0/24, next(1) subnet would be 192.168.2.0/24, next(2) subnet
+	 * would be 192.168.3.0/24, and so on.
 	 * 
-	 * @param idx 0 based index. 0 means this range, 1 means the immediate next
-	 *        range, 2 means next range after next, 3 means next range after
+	 * @param idx 0 based index. 0 means this subnet, 1 means the immediate next
+	 *        subnet, 2 means next subnet after next, 3 means next subnet after
 	 *        next after next ... and so on
-	 * @return the next range
 	 */
-	public Range getNext(int idx) {
+	public Subnet getNext(int idx) {
 		long ipAsLong = ipToLong() + (idx * getMaxIpAddresses());
-		return new Range(longToIp(ipAsLong), maskSize);
+		return new Subnet(longToIp(ipAsLong), maskSize);
 	}
 
 	/**
-	 * Finds next available sub-range with the new-mask after the given range
+	 * Finds next available inner subnet with the new-mask after the given
+	 * subnet. For example, if the current subnet is 192.168.0.0/16, 'after'
+	 * subnet is 192.168.5.0/24, and new-mask is 24, then the subnet returned
+	 * would be 192.168.6.0/24. Another example, if the current subnet is
+	 * 192.168.0.0/16, 'after' subnet is 192.168.5.0/24, and new-mask is 22,
+	 * then the subnet returned would be 192.168.64.0/22
 	 */
-	public Range getNextAvailableSubRange(Range after, int newMask) {
-		Range toCompare = getSubRange(newMask);
+	public Subnet getNextAvailableSubnet(Subnet after, int newMask) {
+		Subnet toCompare = createInnerSubnet(newMask);
 		
 		try {
 			String afterNext = after.getNext().getFirstIPAddressForComparison();
@@ -85,13 +108,18 @@ public class Range {
 		return toCompare;
 	}
 	
-	public Range getPrevious() {
+	/**
+	 * Gets the previous subnet with this mask in the enclosing subnet. For
+	 * example, if current subnet is 192.168.1.0/24, previous subnet would be
+	 * 192.168.0.0/24
+	 */
+	public Subnet getPrevious() {
 		long ipAsLong = ipToLong() - getMaxIpAddresses();
-		return new Range(longToIp(ipAsLong), maskSize);
+		return new Subnet(longToIp(ipAsLong), maskSize);
 	}
 
-	public Range getSubRange(int newMaskSize) {
-		return new Range(getFirstIPAddress(), newMaskSize);
+	public Subnet createInnerSubnet(int newMask) {
+		return new Subnet(getFirstIPAddress(), newMask);
 	}
 	
 	private String longToIp(long ip) {

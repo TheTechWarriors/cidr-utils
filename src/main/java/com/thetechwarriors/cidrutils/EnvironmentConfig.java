@@ -19,31 +19,16 @@ package com.thetechwarriors.cidrutils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RangeGroup {
+public class EnvironmentConfig {
+
+	private List<SubnetGroup> groups = new ArrayList<SubnetGroup>();
 	
-	private String name;
-	private int mask;
-	private int count;
-	
-	public RangeGroup(String name, int mask, int count) {
-		this.name = name;
-		this.mask = mask;
-		this.count = count;
+	public EnvironmentConfig withRangeGroup(String name, int maskSize, int numSubnets) {
+		groups.add(new SubnetGroup(name, maskSize, numSubnets));
+		return this;
 	}
 
-	public List<Range> getRanges(Range startingRange) {
-		List<Range> ranges = new ArrayList<>();
-		for (int i = 0; i < count; i++) {
-			ranges.add(startingRange.getNext(i));
-		}
-		return ranges;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public int getMask() {
-		return mask;
+	public SubnetGroup[] getRangeGroups() {
+		return groups.toArray(new SubnetGroup[groups.size()]);
 	}
 }

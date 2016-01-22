@@ -24,27 +24,28 @@ public class VipcCidrRanges {
 		
 	public void calculate() throws Exception {
 		
-		EnvironmentBluePrint small = new EnvironmentBluePrint()
+		EnvironmentConfig small = new EnvironmentConfig()
 				.withRangeGroup("svcs", 27, 4)
 				.withRangeGroup("apps", 28, 4)
 				.withRangeGroup("cass", 28, 3);
 		
-		EnvironmentBluePrint large = new EnvironmentBluePrint()
+		EnvironmentConfig large = new EnvironmentConfig()
 				.withRangeGroup("apps", 22, 4)
+				.withRangeGroup("fut*", 22, 4)
 				.withRangeGroup("cass", 24, 3)
 				.withRangeGroup("svcs", 25, 4);
 
-		EnvironmentBluePrint acorn = new EnvironmentBluePrint()
+		EnvironmentConfig acorn = new EnvironmentConfig()
 				.withRangeGroup("svcs", 24, 4);
 		
-		Range vpc = new Range("172.28.0.0", 16);
-		Range largeEnvRange = vpc.getSubRange(18);
+		Subnet vpc = new Subnet("172.28.0.0", 16);
+		Subnet largeEnvRange = vpc.createInnerSubnet(18);
 		
-		Range acornRange = largeEnvRange.getNext(0).getSubRange(20);
+		Subnet acornRange = largeEnvRange.getNext(0).createInnerSubnet(20);
 		System.out.println(createEnvironment("sequoia", acornRange.getNext(0), acorn));
 		System.out.println(createEnvironment("acorn", acornRange.getNext(1), acorn));
 		
-		Range smallRange = acornRange.getNext(3).getSubRange(24);
+		Subnet smallRange = acornRange.getNext(3).createInnerSubnet(24);
 		System.out.println(createEnvironment("smalik", smallRange.getNext(0), small));
 		System.out.println(createEnvironment("rsutton", smallRange.getNext(1), small));
 		System.out.println(createEnvironment("bboppana", smallRange.getNext(2), small));
@@ -53,7 +54,7 @@ public class VipcCidrRanges {
 		System.out.println(createEnvironment("prod", largeEnvRange.getNext(3), large));
 	}
 
-	private Environment createEnvironment(String name, Range startingRange, EnvironmentBluePrint bluePrint) {
-		return new Environment(name).withRangeGroups(startingRange, bluePrint.getRangeGroups()) ;
+	private Environment createEnvironment(String name, Subnet startingRange, EnvironmentConfig config) {
+		return new Environment(name).withSubnetGroups(startingRange, config.getRangeGroups()) ;
 	}
 }

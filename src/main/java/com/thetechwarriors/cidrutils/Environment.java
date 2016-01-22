@@ -22,37 +22,38 @@ import java.util.Map;
 
 public class Environment {
 	
-	private Map<String, List<Range>> subnets = new LinkedHashMap<String, List<Range>>();
+	private Map<String, List<Subnet>> subnetGroups = new LinkedHashMap<String, List<Subnet>>();
 	private String name;
 	
 	public Environment(String name) {
 		this.name = name;
 	}
 	
-	public Environment withRangeGroups(Range startingRange, RangeGroup... groups) {
+	public Environment withSubnetGroups(Subnet startingRange, SubnetGroup... groups) {
 	
-		Range lastRangeInGroup = null;
-		Range nextStartingRange = null;
+		Subnet lastSubnetInGroup = null;
+		Subnet nextStartingSubnet = null;
 		
-		for(RangeGroup group : groups) {
+		for(SubnetGroup group : groups) {
 			
-			if (nextStartingRange == null) {
-				nextStartingRange = startingRange.getSubRange(group.getMask());
+			int mask = group.getMask();
+			if (nextStartingSubnet == null) {
+				nextStartingSubnet = startingRange.createInnerSubnet(mask);
 			} else {
-				nextStartingRange = startingRange.getNextAvailableSubRange(lastRangeInGroup, group.getMask());
+				nextStartingSubnet = startingRange.getNextAvailableSubnet(lastSubnetInGroup, mask);
 			}
 			
-			List<Range> ranges = group.getRanges(nextStartingRange);
-			subnets.put(group.getName(), ranges);
+			List<Subnet> nets = group.getSubnets(nextStartingSubnet);
+			subnetGroups.put(group.getName(), nets);
 			
-			lastRangeInGroup = ranges.get(ranges.size()-1);
+			lastSubnetInGroup = nets.get(nets.size()-1);
 		}
 		
 		return this;
 	}
 	
-	public Map<String, List<Range>> getSubnets() {
-		return subnets;
+	public Map<String, List<Subnet>> getSubnetGroups() {
+		return subnetGroups;
 	}
 	
 	public String getName() {
@@ -61,10 +62,10 @@ public class Environment {
 	
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		for(String type : subnets.keySet()) {
+		for(String type : subnetGroups.keySet()) {
 			int i = 0;
-			for(Range range : subnets.get(type)) {
-				String str = String.format("Env=%-10s Type=%-10s Subnet=%-20s IPs=%d", name, type + "-" + i++, range, range.getMaxIpAddresses());
+			for(Subnet subnet : subnetGroups.get(type)) {
+				String str = String.format("Env=%-10s Type=%-10s Subnet=%-20s IPs=%d", name, type + "-" + i++, subnet, subnet.getMaxIpAddresses());
 				builder.append(str).append("\n");
 			}
 		}
