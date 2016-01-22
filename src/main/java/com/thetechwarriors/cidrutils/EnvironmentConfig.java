@@ -23,12 +23,12 @@ public class EnvironmentConfig {
 
 	private List<SubnetGroup> groups = new ArrayList<SubnetGroup>();
 	
-	public EnvironmentConfig withRangeGroup(String name, int maskSize, int numSubnets) {
+	public EnvironmentConfig withSubnetGroup(String name, int maskSize, int numSubnets) {
 		groups.add(new SubnetGroup(name, maskSize, numSubnets));
 		return this;
 	}
 
-	public SubnetGroup[] getRangeGroups() {
+	public SubnetGroup[] getSubnetGroups() {
 		return groups.toArray(new SubnetGroup[groups.size()]);
 	}
 }
