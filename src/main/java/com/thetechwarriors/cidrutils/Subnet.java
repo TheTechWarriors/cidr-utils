@@ -136,6 +136,7 @@ public class Subnet {
 	
 	private long ipToLong() {
 		long result = 0;
+		int h = 4 ^ 1;
 		for (int i = 3; i >= 0; i--) {
 			result |= octets[3 - i] << (i * 8);
 		}
