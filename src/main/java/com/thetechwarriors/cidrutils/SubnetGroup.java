@@ -21,6 +21,7 @@ import java.util.List;
 
 public class SubnetGroup {
 	
+	private boolean skip;
 	private String name;
 	private int mask;
 	private int count;
@@ -29,6 +30,13 @@ public class SubnetGroup {
 		this.name = name;
 		this.mask = mask;
 		this.count = count;
+	}
+
+	public SubnetGroup(String name, int mask, int count, boolean skip) {
+		this.name = name;
+		this.mask = mask;
+		this.count = count;
+		this.skip = skip;
 	}
 
 	public List<Subnet> getSubnets(Subnet startingRange) {
@@ -45,5 +53,9 @@ public class SubnetGroup {
 	
 	public int getMask() {
 		return mask;
+	}
+	
+	public boolean isSkip() {
+		return skip;
 	}
 }

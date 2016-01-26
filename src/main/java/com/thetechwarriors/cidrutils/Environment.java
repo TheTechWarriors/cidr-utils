@@ -22,10 +22,12 @@ import java.util.Map;
 
 public class Environment {
 	
+	private SubnetAllocationMonitor monitor;
 	private Map<String, List<Subnet>> subnetGroups = new LinkedHashMap<String, List<Subnet>>();
 	private String name;
 	
-	public Environment(String name) {
+	public Environment(SubnetAllocationMonitor monitor, String name) {
+		this.monitor = monitor;
 		this.name = name;
 	}
 	
@@ -44,7 +46,16 @@ public class Environment {
 			}
 			
 			List<Subnet> nets = group.getSubnets(nextStartingSubnet);
-			subnetGroups.put(group.getName(), nets);
+			if (group.isSkip()) {
+				for (Subnet net : nets) {
+					monitor.markForSkipping(net);
+				}
+			} else {
+				subnetGroups.put(group.getName(), nets);
+				for (Subnet net : nets) {
+					monitor.markForInUse(net);
+				}
+			}
 			
 			lastSubnetInGroup = nets.get(nets.size()-1);
 		}

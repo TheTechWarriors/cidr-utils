@@ -1,6 +1,7 @@
 package com.thetechwarriors.cidrutils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -54,4 +55,24 @@ public class SubnetTest {
 		assertEquals("10.10.65.0/24", medium.getNextAvailableSubnet(after, 24).toString());
 		assertEquals("10.10.65.0/25", small.getNextAvailableSubnet(after, 25).toString());
 	}
+	
+	@Test
+	public void testIsAfterEqualSizeSubnets() {
+
+		Subnet a1 = new Subnet("10.10.64.0", 24); 
+		Subnet a2 = new Subnet("10.10.65.0", 24);
+		
+		assertTrue(a2.isAfter(a1));
+	}
+	
+
+	@Test
+	public void testisAfterDiffSizeSubnets() {
+
+		Subnet a1 = new Subnet("10.10.65.0", 24); 
+		Subnet a2 = new Subnet("10.10.64.0", 25);
+		
+		assertTrue(a1.isAfter(a2));
+	}
+
 }

@@ -21,8 +21,18 @@ import java.util.List;
 
 public class EnvironmentConfig {
 
+	private int maskSize;
 	private List<SubnetGroup> groups = new ArrayList<SubnetGroup>();
 	
+	public EnvironmentConfig(int maskSize) {
+		this.maskSize = maskSize;
+	}
+
+	public EnvironmentConfig withSubnetsToSkip(int maskSize, int numSubnets) {
+		groups.add(new SubnetGroup("skipped", maskSize, numSubnets, true));
+		return this;
+	}
+
 	public EnvironmentConfig withSubnetGroup(String name, int maskSize, int numSubnets) {
 		groups.add(new SubnetGroup(name, maskSize, numSubnets));
 		return this;
@@ -30,5 +40,9 @@ public class EnvironmentConfig {
 
 	public SubnetGroup[] getSubnetGroups() {
 		return groups.toArray(new SubnetGroup[groups.size()]);
+	}
+	
+	public int getMaskSize() {
+		return maskSize;
 	}
 }

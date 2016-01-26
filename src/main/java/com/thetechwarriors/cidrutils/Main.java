@@ -18,42 +18,50 @@ package com.thetechwarriors.cidrutils;
 
 public class Main {
 
+	private SubnetAllocationMonitor monitor;
+	private Subnet subnet;
+	
 	public static void main(String[] args) throws Exception {
-		new Main().calculate();
+		new Main("172.28.0.0", 16).calculate();
 	}
 		
+	public Main(String ipAddress, int mask) {
+		subnet = new Subnet(ipAddress, mask);
+		monitor = new SubnetAllocationMonitor(subnet);
+	}
+	
 	public void calculate() throws Exception {
 		
-		EnvironmentConfig small = new EnvironmentConfig()
+		EnvironmentConfig small = new EnvironmentConfig(24)
 				.withSubnetGroup("svcs", 27, 4)
 				.withSubnetGroup("apps", 28, 4)
 				.withSubnetGroup("cass", 28, 3);
 		
-		EnvironmentConfig large = new EnvironmentConfig()
+		EnvironmentConfig large = new EnvironmentConfig(18)
 				.withSubnetGroup("apps", 22, 4)
+				.withSubnetsToSkip(22, 4)
 				.withSubnetGroup("cass", 24, 3)
+				.withSubnetsToSkip(24, 1)
 				.withSubnetGroup("svcs", 25, 4);
 
-		EnvironmentConfig acorn = new EnvironmentConfig()
-				.withSubnetGroup("svcs", 24, 4);
+		EnvironmentConfig acorn = new EnvironmentConfig(20)
+				.withSubnetGroup("svcs", 24, 4)
+				.withSubnetsToSkip(24, 12);
 		
-		Subnet vpc = new Subnet("172.28.0.0", 16);
-		Subnet largeEnvSubnets = vpc.createInnerSubnet(18);
+		System.out.println(createEnvironment("sequoia", acorn));
+		System.out.println(createEnvironment("acorn", acorn));
 		
-		Subnet acornSubnets = largeEnvSubnets.getNext(0).createInnerSubnet(20);
-		System.out.println(createEnvironment("sequoia", acornSubnets.getNext(0), acorn));
-		System.out.println(createEnvironment("acorn", acornSubnets.getNext(1), acorn));
-		
-		Subnet smallSubnets = acornSubnets.getNext(3).createInnerSubnet(24);
-		System.out.println(createEnvironment("smalik", smallSubnets.getNext(0), small));
-		System.out.println(createEnvironment("rsutton", smallSubnets.getNext(1), small));
-		System.out.println(createEnvironment("bboppana", smallSubnets.getNext(2), small));
+		System.out.println(createEnvironment("smalik", small));
+		System.out.println(createEnvironment("rsutton", small));
+		System.out.println(createEnvironment("bboppana", small));
 
-		System.out.println(createEnvironment("test", largeEnvSubnets.getNext(2), large));
-		System.out.println(createEnvironment("prod", largeEnvSubnets.getNext(3), large));
+		monitor.markForSkipping(18);
+		System.out.println(createEnvironment("test", large));
+		System.out.println(createEnvironment("prod", large));
 	}
 
-	private Environment createEnvironment(String name, Subnet startingRange, EnvironmentConfig config) {
-		return new Environment(name).withSubnetGroups(startingRange, config.getSubnetGroups()) ;
+	private Environment createEnvironment(String name, EnvironmentConfig config) {
+		Subnet subnet = monitor.getNextAvailableSubnet(config.getMaskSize());
+		return new Environment(monitor, name).withSubnetGroups(subnet, config.getSubnetGroups()) ;
 	}
 }

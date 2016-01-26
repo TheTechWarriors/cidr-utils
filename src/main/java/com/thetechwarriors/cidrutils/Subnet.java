@@ -16,6 +16,8 @@
 
 package com.thetechwarriors.cidrutils;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class Subnet {
@@ -133,7 +135,36 @@ public class Subnet {
 		}
 		return result.toString();
 	}
+
+	public boolean isAfter(Subnet other) {
+		String thisAddress = getNext().getFirstIPAddressForComparison();
+		String otherAddress = other.getNext().getFirstIPAddressForComparison();
+		return thisAddress.compareTo(otherAddress) > 0 ;
+	}
 	
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + maskSize;
+		result = prime * result + Arrays.hashCode(octets);
+		return result;
+	}
+
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Subnet))
+			return false;
+		Subnet other = (Subnet) obj;
+		if (maskSize != other.maskSize)
+			return false;
+		if (!Arrays.equals(octets, other.octets))
+			return false;
+		return true;
+	}
+
 	private long ipToLong() {
 		long result = 0;
 		int h = 4 ^ 1;
@@ -142,7 +173,7 @@ public class Subnet {
 		}
 		return result;
 	  }	
-	
+
 	public String toString() {
 		return String.format("%d.%d.%d.%d/%d", octets[0], octets[1], octets[2], octets[3], maskSize);
 	}
