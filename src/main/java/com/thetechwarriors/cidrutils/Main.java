@@ -16,52 +16,86 @@
 
 package com.thetechwarriors.cidrutils;
 
+import java.util.List;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 public class Main {
 
-	private SubnetAllocationMonitor monitor;
-	private Subnet subnet;
-	
 	public static void main(String[] args) throws Exception {
-		new Main("172.28.0.0", 16).calculate();
-	}
 		
-	public Main(String ipAddress, int mask) {
-		subnet = new Subnet(ipAddress, mask);
-		monitor = new SubnetAllocationMonitor(subnet);
+		SubnetAllocator allocator = new SubnetAllocator("172.28.0.0", 16)
+				
+			.withEnvironmentConfig("small",
+				new EnvironmentConfig(24)
+					.withSubnetGroup("svcs", 27, 4)
+					.withSubnetGroup("apps", 28, 4)
+					.withSubnetGroup("cass", 28, 3))
+			
+			.withEnvironmentConfig("large",
+				new EnvironmentConfig(18)
+					.withSubnetGroup("apps", 22, 4)
+					.withSubnetsToSkip(22, 4)
+					.withSubnetGroup("cass", 24, 3)
+					.withSubnetsToSkip(24, 1)
+					.withSubnetGroup("svcs", 25, 4))
+			
+			.withEnvironmentConfig("utility",
+				new EnvironmentConfig(20)
+					.withSubnetGroup("svcs", 24, 4)
+					.withSubnetsToSkip(24, 12));
+		
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode root = mapper.createObjectNode();
+
+		printUtilEnvironment(root, allocator.createEnvironment("sequoia", "utility"));
+		printEnvironment(root, allocator.createEnvironment("acorn", "utility"));
+		
+		printEnvironment(root, allocator.createEnvironment("acowan", "small"));
+		printEnvironment(root, allocator.createEnvironment("bboppana", "small"));
+		printEnvironment(root, allocator.createEnvironment("jrazgunas", "small"));
+		printEnvironment(root, allocator.createEnvironment("kalexander", "small"));
+		printEnvironment(root, allocator.createEnvironment("rsutton", "small"));
+		printEnvironment(root, allocator.createEnvironment("sellers", "small"));
+		printEnvironment(root, allocator.createEnvironment("smalik", "small"));
+
+		allocator.skip(18);
+		printEnvironment(root, allocator.createEnvironment("test", "large"));
+		printEnvironment(root, allocator.createEnvironment("prod", "large"));
+		
+		System.out.println(root);
+	}
+
+	static public void printUtilEnvironment(ObjectNode root, Environment env) {
+		ObjectNode main = root.putObject(env.getName());
+		doSubnetGroup(env.getSubnetGroups().get("svcs"), main);
 	}
 	
-	public void calculate() throws Exception {
-		
-		EnvironmentConfig small = new EnvironmentConfig(24)
-				.withSubnetGroup("svcs", 27, 4)
-				.withSubnetGroup("apps", 28, 4)
-				.withSubnetGroup("cass", 28, 3);
-		
-		EnvironmentConfig large = new EnvironmentConfig(18)
-				.withSubnetGroup("apps", 22, 4)
-				.withSubnetsToSkip(22, 4)
-				.withSubnetGroup("cass", 24, 3)
-				.withSubnetsToSkip(24, 1)
-				.withSubnetGroup("svcs", 25, 4);
-
-		EnvironmentConfig acorn = new EnvironmentConfig(20)
-				.withSubnetGroup("svcs", 24, 4)
-				.withSubnetsToSkip(24, 12);
-		
-		System.out.println(createEnvironment("sequoia", acorn));
-		System.out.println(createEnvironment("acorn", acorn));
-		
-		System.out.println(createEnvironment("smalik", small));
-		System.out.println(createEnvironment("rsutton", small));
-		System.out.println(createEnvironment("bboppana", small));
-
-		monitor.markForSkipping(18);
-		System.out.println(createEnvironment("test", large));
-		System.out.println(createEnvironment("prod", large));
+	static public void printEnvironment(ObjectNode root, Environment env) {
+		ObjectNode main = root.putObject(env.getName());
+		doSubnetGroup(env.getSubnetGroups().get("apps"), "APPS", main);
+		doSubnetGroup(env.getSubnetGroups().get("cass"), "CASS", main);
+		doSubnetGroup(env.getSubnetGroups().get("svcs"), "SVCS", main);
 	}
 
-	private Environment createEnvironment(String name, EnvironmentConfig config) {
-		Subnet subnet = monitor.getNextAvailableSubnet(config.getMaskSize());
-		return new Environment(monitor, name).withSubnetGroups(subnet, config.getSubnetGroups()) ;
+	static private void doSubnetGroup(List<Subnet> subnets, String prefix, ObjectNode main) {
+		doSubnetGroup(subnets, prefix, false, main);
+	}
+
+	static private void doSubnetGroup(List<Subnet> subnets, ObjectNode main) {
+		doSubnetGroup(subnets, null, true, main);
+	}
+
+	static private void doSubnetGroup(List<Subnet> subnets, String prefix, boolean noPrefix, ObjectNode main) {
+		String[] az = { "us-east-1a", "us-east-1c", "us-east-1d", "us-east-1e" };
+		if (subnets != null) {
+			int i = 0;
+			for (Subnet s : subnets) {
+				main.put((noPrefix ? "AZ" : prefix + "_AZ") + (i+1), az[i]);
+				main.put((noPrefix ? "CIDR" : prefix + "_CIDR") + (i+1), s.toString());
+				i++;
+			}
+		}
 	}
 }
