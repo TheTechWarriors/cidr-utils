@@ -19,6 +19,7 @@ package com.thetechwarriors.cidrutils;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class Main {
@@ -47,24 +48,26 @@ public class Main {
 					.withSubnetsToSkip(24, 12));
 		
 		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode root = mapper.createObjectNode();
+		mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+		ObjectNode rootNode = mapper.createObjectNode();
+		ObjectNode cidrsNode = rootNode.putObject("Mappings").putObject("VpcSubnetCidrs");
 
-		printUtilEnvironment(root, allocator.createEnvironment("sequoia", "utility"));
-		printEnvironment(root, allocator.createEnvironment("acorn", "utility"));
+		printUtilEnvironment(cidrsNode, allocator.createEnvironment("sequoia", "utility"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("acorn", "utility"));
 		
-		printEnvironment(root, allocator.createEnvironment("acowan", "small"));
-		printEnvironment(root, allocator.createEnvironment("bboppana", "small"));
-		printEnvironment(root, allocator.createEnvironment("jrazgunas", "small"));
-		printEnvironment(root, allocator.createEnvironment("kalexander", "small"));
-		printEnvironment(root, allocator.createEnvironment("rsutton", "small"));
-		printEnvironment(root, allocator.createEnvironment("sellers", "small"));
-		printEnvironment(root, allocator.createEnvironment("smalik", "small"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("acowan", "small"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("bboppana", "small"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("jrazgunas", "small"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("kalexander", "small"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("rsutton", "small"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("sellers", "small"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("smalik", "small"));
 
 		allocator.skip(18);
-		printEnvironment(root, allocator.createEnvironment("test", "large"));
-		printEnvironment(root, allocator.createEnvironment("prod", "large"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("test", "large"));
+		printEnvironment(cidrsNode, allocator.createEnvironment("prod", "large"));
 		
-		System.out.println(root);
+		System.out.println(mapper.writeValueAsString(rootNode));
 	}
 
 	static public void printUtilEnvironment(ObjectNode root, Environment env) {
@@ -74,9 +77,9 @@ public class Main {
 	
 	static public void printEnvironment(ObjectNode root, Environment env) {
 		ObjectNode main = root.putObject(env.getName());
-		doSubnetGroup(env.getSubnetGroups().get("apps"), "APPS", main);
-		doSubnetGroup(env.getSubnetGroups().get("cass"), "CASS", main);
-		doSubnetGroup(env.getSubnetGroups().get("svcs"), "SVCS", main);
+		doSubnetGroup(env.getSubnetGroups().get("apps"), "Apps", main);
+		doSubnetGroup(env.getSubnetGroups().get("cass"), "Cass", main);
+		doSubnetGroup(env.getSubnetGroups().get("svcs"), "Svcs", main);
 	}
 
 	static private void doSubnetGroup(List<Subnet> subnets, String prefix, ObjectNode main) {
@@ -92,8 +95,8 @@ public class Main {
 		if (subnets != null) {
 			int i = 0;
 			for (Subnet s : subnets) {
-				main.put((noPrefix ? "AZ" : prefix + "_AZ") + (i+1), az[i]);
-				main.put((noPrefix ? "CIDR" : prefix + "_CIDR") + (i+1), s.toString());
+				main.put((noPrefix ? "Az" : prefix + "Az") + (i+1), az[i]);
+				main.put((noPrefix ? "Cidr" : prefix + "Cidr") + (i+1), s.toString());
 				i++;
 			}
 		}

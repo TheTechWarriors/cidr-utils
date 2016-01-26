@@ -29,5 +29,7 @@ public class SubnetAllocator {
 		return new Environment(monitor, name).withSubnetGroups(subnet, config.getSubnetGroups()) ;
 	}
 	
-	
+	public Subnet getSubnet() {
+		return subnet;
+	}
 }
