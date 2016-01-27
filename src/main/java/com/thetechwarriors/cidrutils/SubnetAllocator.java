@@ -1,11 +1,13 @@
 package com.thetechwarriors.cidrutils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SubnetAllocator {
-
+	
 	private Map<String, EnvironmentConfig> configs = new HashMap<>();
+	private Map<String, Environment> environments = new LinkedHashMap<>();
 	private SubnetAllocationMonitor monitor;
 	private Subnet subnet;
 
@@ -20,13 +22,19 @@ public class SubnetAllocator {
 	}
 	
 	public void skip(int mask) {
-		monitor.markForSkipping(18);
+		monitor.markForSkipping(mask);
 	}
 	
-	public Environment createEnvironment(String name, String configName) {
+	public Environment addEnvironment(String name, String configName) {
 		EnvironmentConfig config = configs.get(configName);		
 		Subnet subnet = monitor.getNextAvailableSubnet(config.getMaskSize());
-		return new Environment(monitor, name).withSubnetGroups(subnet, config.getSubnetGroups()) ;
+		Environment environment = new Environment(monitor, name).withSubnetGroups(subnet, config.getSubnetGroups()) ;
+		environments.put(name, environment);
+		return environment;
+	}
+	
+	public Map<String, Environment> getEnvironments() {
+		return environments;
 	}
 	
 	public Subnet getSubnet() {

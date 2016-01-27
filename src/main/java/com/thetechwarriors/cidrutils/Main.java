@@ -52,20 +52,20 @@ public class Main {
 		ObjectNode rootNode = mapper.createObjectNode();
 		ObjectNode cidrsNode = rootNode.putObject("Mappings").putObject("VpcSubnetCidrs");
 
-		printUtilEnvironment(cidrsNode, allocator.createEnvironment("sequoia", "utility"));
-		printEnvironment(cidrsNode, allocator.createEnvironment("acorn", "utility"));
+		printUtilEnvironment(cidrsNode, allocator.addEnvironment("sequoia", "utility"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("acorn", "utility"));
 		
-		printEnvironment(cidrsNode, allocator.createEnvironment("acowan", "small"));
-		printEnvironment(cidrsNode, allocator.createEnvironment("bboppana", "small"));
-		printEnvironment(cidrsNode, allocator.createEnvironment("jrazgunas", "small"));
-		printEnvironment(cidrsNode, allocator.createEnvironment("kalexander", "small"));
-		printEnvironment(cidrsNode, allocator.createEnvironment("rsutton", "small"));
-		printEnvironment(cidrsNode, allocator.createEnvironment("sellers", "small"));
-		printEnvironment(cidrsNode, allocator.createEnvironment("smalik", "small"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("acowan", "small"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("bboppana", "small"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("jrazgunas", "small"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("kalexander", "small"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("rsutton", "small"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("sellers", "small"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("smalik", "small"));
 
 		allocator.skip(18);
-		printEnvironment(cidrsNode, allocator.createEnvironment("test", "large"));
-		printEnvironment(cidrsNode, allocator.createEnvironment("prod", "large"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("test", "large"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("prod", "large"));
 		
 		System.out.println(mapper.writeValueAsString(rootNode));
 	}
