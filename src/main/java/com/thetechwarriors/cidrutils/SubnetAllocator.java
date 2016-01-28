@@ -28,7 +28,7 @@ public class SubnetAllocator {
 	public Environment addEnvironment(String name, String configName) {
 		EnvironmentConfig config = configs.get(configName);		
 		Subnet subnet = monitor.getNextAvailableSubnet(config.getMaskSize());
-		Environment environment = new Environment(monitor, name).withSubnetGroups(subnet, config.getSubnetGroups()) ;
+		Environment environment = new Environment(monitor, subnet, name).withSubnetGroups(config.getSubnetGroups()) ;
 		environments.put(name, environment);
 		return environment;
 	}

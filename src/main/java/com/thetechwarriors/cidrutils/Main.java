@@ -53,8 +53,8 @@ public class Main {
 		ObjectNode cidrsNode = rootNode.putObject("Mappings").putObject("VpcSubnetCidrs");
 
 		printUtilEnvironment(cidrsNode, allocator.addEnvironment("sequoia", "utility"));
-		printEnvironment(cidrsNode, allocator.addEnvironment("acorn", "utility"));
 		
+		printEnvironment(cidrsNode, allocator.addEnvironment("acorn", "utility"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("acowan", "small"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("bboppana", "small"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("jrazgunas", "small"));
@@ -62,7 +62,6 @@ public class Main {
 		printEnvironment(cidrsNode, allocator.addEnvironment("rsutton", "small"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("sellers", "small"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("smalik", "small"));
-
 		allocator.skip(18);
 		printEnvironment(cidrsNode, allocator.addEnvironment("test", "large"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("prod", "large"));
@@ -72,11 +71,13 @@ public class Main {
 
 	static public void printUtilEnvironment(ObjectNode root, Environment env) {
 		ObjectNode main = root.putObject(env.getName());
+		main.put("EnvironmentCidr", env.getSubnet().toString());
 		doSubnetGroup(env.getSubnetGroups().get("svcs"), main);
 	}
 	
 	static public void printEnvironment(ObjectNode root, Environment env) {
 		ObjectNode main = root.putObject(env.getName());
+		main.put("EnvironmentCidr", env.getSubnet().toString());
 		doSubnetGroup(env.getSubnetGroups().get("apps"), "Apps", main);
 		doSubnetGroup(env.getSubnetGroups().get("cass"), "Cass", main);
 		doSubnetGroup(env.getSubnetGroups().get("svcs"), "Svcs", main);

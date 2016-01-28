@@ -25,13 +25,15 @@ public class Environment {
 	private SubnetAllocationMonitor monitor;
 	private Map<String, List<Subnet>> subnetGroups = new LinkedHashMap<String, List<Subnet>>();
 	private String name;
+	private Subnet subnet;
 	
-	public Environment(SubnetAllocationMonitor monitor, String name) {
+	public Environment(SubnetAllocationMonitor monitor, Subnet subnet, String name) {
 		this.monitor = monitor;
 		this.name = name;
+		this.subnet = subnet;
 	}
 	
-	public Environment withSubnetGroups(Subnet startingRange, SubnetGroup... groups) {
+	public Environment withSubnetGroups(SubnetGroup... groups) {
 	
 		Subnet lastSubnetInGroup = null;
 		Subnet nextStartingSubnet = null;
@@ -40,9 +42,9 @@ public class Environment {
 			
 			int mask = group.getMask();
 			if (nextStartingSubnet == null) {
-				nextStartingSubnet = startingRange.createInnerSubnet(mask);
+				nextStartingSubnet = subnet.createInnerSubnet(mask);
 			} else {
-				nextStartingSubnet = startingRange.getNextAvailableSubnet(lastSubnetInGroup, mask);
+				nextStartingSubnet = subnet.getNextAvailableSubnet(lastSubnetInGroup, mask);
 			}
 			
 			List<Subnet> nets = group.getSubnets(nextStartingSubnet);
@@ -69,6 +71,10 @@ public class Environment {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public Subnet getSubnet() {
+		return subnet;
 	}
 	
 	public String toString() {
