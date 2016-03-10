@@ -30,22 +30,24 @@ public class Main {
 				
 			.withEnvironmentConfig("small",
 				new EnvironmentConfig(24)
-					.withSubnetGroup("svcs", 27, 4)
-					.withSubnetGroup("apps", 28, 4)
-					.withSubnetGroup("cass", 28, 3))
+					.withSubnetGroup("svcs", 27, 3)
+					.withSubnetsToSkip(27, 1)
+					.withSubnetGroup("apps", 28, 3)
+					.withSubnetsToSkip(28, 1)
+					.withSubnetGroup("dse", 28, 3))
 			
 			.withEnvironmentConfig("large",
 				new EnvironmentConfig(18)
-					.withSubnetGroup("apps", 22, 4)
-					.withSubnetsToSkip(22, 4)
-					.withSubnetGroup("cass", 24, 3)
+					.withSubnetGroup("apps", 22, 3)
+					.withSubnetsToSkip(22, 5)
+					.withSubnetGroup("dse", 24, 3)
 					.withSubnetsToSkip(24, 1)
-					.withSubnetGroup("svcs", 25, 4))
+					.withSubnetGroup("svcs", 25, 3))
 			
 			.withEnvironmentConfig("utility",
 				new EnvironmentConfig(20)
-					.withSubnetGroup("svcs", 24, 4)
-					.withSubnetsToSkip(24, 12));
+					.withSubnetGroup("svcs", 24, 3)
+					.withSubnetsToSkip(24, 13));
 		
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -62,6 +64,7 @@ public class Main {
 		printEnvironment(cidrsNode, allocator.addEnvironment("rsutton", "small"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("sellers", "small"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("smalik", "small"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("smalik2", "small"));
 		allocator.skip(18);
 		printEnvironment(cidrsNode, allocator.addEnvironment("test", "large"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("prod", "large"));
@@ -79,7 +82,7 @@ public class Main {
 		ObjectNode main = root.putObject(env.getName());
 		main.put("EnvironmentCidr", env.getSubnet().toString());
 		doSubnetGroup(env.getSubnetGroups().get("apps"), "Apps", main);
-		doSubnetGroup(env.getSubnetGroups().get("cass"), "Cass", main);
+		doSubnetGroup(env.getSubnetGroups().get("dse"), "Dse", main);
 		doSubnetGroup(env.getSubnetGroups().get("svcs"), "Svcs", main);
 	}
 
