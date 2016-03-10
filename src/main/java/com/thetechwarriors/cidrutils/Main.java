@@ -30,8 +30,10 @@ public class Main {
 				
 			.withEnvironmentConfig("small",
 				new EnvironmentConfig(24)
-					.withSubnetGroup("svcs", 27, 3)
-					.withSubnetsToSkip(27, 1)
+					.withSubnetGroup("svcs", 28, 3)
+					.withSubnetsToSkip(28, 1)
+					.withSubnetGroup("public", 28, 3)
+					.withSubnetsToSkip(28, 1)
 					.withSubnetGroup("apps", 28, 3)
 					.withSubnetsToSkip(28, 1)
 					.withSubnetGroup("dse", 28, 3))
@@ -42,8 +44,17 @@ public class Main {
 					.withSubnetsToSkip(22, 5)
 					.withSubnetGroup("dse", 24, 3)
 					.withSubnetsToSkip(24, 1)
-					.withSubnetGroup("svcs", 25, 3))
+					.withSubnetGroup("svcs", 25, 3)
+					.withSubnetsToSkip(25, 3)
+					.withSubnetGroup("public", 24, 3))
 			
+			.withEnvironmentConfig("medium",
+				new EnvironmentConfig(20)
+					.withSubnetGroup("svcs", 24, 3)
+					.withSubnetsToSkip(24, 3)
+					.withSubnetGroup("public", 25, 3)
+					.withSubnetsToSkip(24, 8))
+
 			.withEnvironmentConfig("utility",
 				new EnvironmentConfig(20)
 					.withSubnetGroup("svcs", 24, 3)
@@ -56,7 +67,7 @@ public class Main {
 
 		printUtilEnvironment(cidrsNode, allocator.addEnvironment("sequoia", "utility"));
 		
-		printEnvironment(cidrsNode, allocator.addEnvironment("acorn", "utility"));
+		printEnvironment(cidrsNode, allocator.addEnvironment("acorn", "medium"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("acowan", "small"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("bboppana", "small"));
 		printEnvironment(cidrsNode, allocator.addEnvironment("jrazgunas", "small"));
@@ -84,6 +95,7 @@ public class Main {
 		doSubnetGroup(env.getSubnetGroups().get("apps"), "Apps", main);
 		doSubnetGroup(env.getSubnetGroups().get("dse"), "Dse", main);
 		doSubnetGroup(env.getSubnetGroups().get("svcs"), "Svcs", main);
+		doSubnetGroup(env.getSubnetGroups().get("public"), "Public", main);
 	}
 
 	static private void doSubnetGroup(List<Subnet> subnets, String prefix, ObjectNode main) {
